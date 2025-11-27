@@ -2,38 +2,22 @@
 from threading import Thread
 from flask import Flask
 import os
-import time
-import logging
+import barber_bot  # this imports your main Telegram bot file
 
-# Import your bot main function (assumes barber_bot.py exposes main())
-# Make sure barber_bot.main() does not call app.run_polling() on import,
-# but only when main() is called.
-import barber_bot
-
-logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
+# Render checks this
 @app.route("/")
-def index():
-    return "OK - barber bot running"
-
-@app.route("/healthz")
-def healthz():
-    return "healthy"
+def home():
+    return "Bot is running!"
 
 def run_bot():
-    """Run your bot's main (blocking)."""
-    logging.info("Starting bot thread...")
-    try:
-        barber_bot.main()
-    except Exception as e:
-        logging.exception("Bot terminated with exception: %s", e)
+    barber_bot.main()  # your main bot function
 
 if __name__ == "__main__":
-    # Start the bot in a background thread
-    t = Thread(target=run_bot, daemon=True)
-    t.start()
-    # Start Flask on PORT (Render provides $PORT)
-    port = int(os.environ.get("PORT", "5000"))
-    logging.info("Starting web server on port %s", port)
+    # run Telegram bot in background thread
+    Thread(target=run_bot).start()
+
+    # run web server for Render
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
